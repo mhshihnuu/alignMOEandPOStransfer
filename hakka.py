@@ -29,15 +29,18 @@ def search_hakka_chinese(sense):
     return hakka, chinese
 
 
-from ckip_transformers.nlp import CkipWordSegmenter, CkipPosTagger#, CkipNerChunker
-ws_driver  = CkipWordSegmenter(level=1)
-pos_driver = CkipPosTagger(level=1)
+from ckiptagger import WS, POS
+#from ckip_transformers.nlp import CkipWordSegmenter, CkipPosTagger#, CkipNerChunker
+#ws_driver  = CkipWordSegmenter(level=1)
+#pos_driver = CkipPosTagger(level=1)
+ws = WS("./data")
+pos = POS("./data")
 
-def pack_ws_pos_sentece(sentence_ws, sentence_pos):
-   assert len(sentence_ws) == len(sentence_pos)
+def pack_ws_pos_sentence(segmented_sent, tagged_sent):
+   assert len(segmented_sent) == len(tagged_sent)
    res = []
-   for word_ws, word_pos in zip(sentence_ws, sentence_pos):
-      res.append(f'{word_ws}({word_pos})')
+   for word, tag in zip(segmented_sent, tagged_sent):
+      res.append(f'{word}({tag})')
    return '\u3000'.join(res)
 
 
@@ -56,9 +59,9 @@ for tsv in cr:
             row.insert(12, chinese)
 #           print(row[1], row[2], row[12])#hakka)
 
-            ws  = ws_driver([chinese])
-            pos = pos_driver(ws)
-            row.insert(13, pack_ws_pos_sentece(ws[0], pos[0]))
+            segmented_sents  = ws([chinese])
+            tagged_sents = pos(segmented_sents)
+            row.insert(13, pack_ws_pos_sentence(segmented_sents[0], tagged_sents[0]))
 
             print('\t'.join(row))#[1:3] + row[11:14]  + row))#[:4], tsv[10])
             cw.writerow(row)#[1:3] + row[11:14] + row)#[:4], tsv[10])
@@ -72,9 +75,9 @@ for tsv in cr:
         tsv.insert(12, chinese)
 #       print(tsv[1], tsv[2], tsv[12])#hakka)
 
-        ws  = ws_driver([chinese])
-        pos = pos_driver(ws)
-        tsv.insert(13, pack_ws_pos_sentece(ws[0], pos[0]))
+        segmented_sents  = ws([chinese])
+        tagged_sents = pos(segmented_sents)
+        tsv.insert(13, pack_ws_pos_sentence(segmented_sents[0], tagged_sents[0]))
 
         print('\t'.join(tsv))#[1:3] + tsv[11:14] + tsv))#[:4], tsv[10])
 #       cw.writerow(tsv)
